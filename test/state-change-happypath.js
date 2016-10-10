@@ -77,7 +77,7 @@ contract('2. State Change (HappyPath)', function(accounts) {
         });
    });
 
-  it('lessee accepts the offer', function(){
+  it('lessor starts the contract', function(){
     return immoRegistry.startRentalAgreement(theAgreementNr, {from:LESSOR_ACC})
         .then(resolveEvent('RentalAgreementStateChange(uint256,uint8,uint8)'))
         .then(function(eventInfo) {
