@@ -5,6 +5,7 @@ contract('1. ImmoRegistry Create', function(accounts) {
   var resolveEvent;
   const OWNER_ACC  = accounts[0];
   const LESSEE_ACC = accounts[1];
+  const AgreementState = [ 'OFFERED', 'PENDING', 'ACTIVE', 'IN_CANCELATION', 'CANCELLED'];
 
   before(function() {
     resolveEvent = web3UtilApi(web3, [ImmoRegistry]).resolveEvent;
@@ -56,20 +57,22 @@ contract('1. ImmoRegistry Create', function(accounts) {
   });
 
   it('new RentalAgreement is valid', function(){
-    const IMMO_ID = 1;
+    const IMMO_ID = 0;
     const DISPLAY_NAME = 'immohouse112';
     const FROM_DATE = 1;
     const TO_DATE = 2;
-    return immoRegistry.createRentalAgreement(IMMO_ID,FROM_DATE,TO_DATE, {from:LESSEE_ACC})
+    return immoRegistry.createImmoOffer(IMMO_ID,FROM_DATE,TO_DATE, {from:OWNER_ACC})
         .then(resolveEvent('NewRentalAgreement(uint256)'))
         .then(function(agreementNr) {
           return immoRegistry.rentalAgreements(agreementNr);
         }).then(function(agreement) {
           assert.equal(0           ,agreement[0].valueOf(),'agreement.id mismatch');
           assert.equal(IMMO_ID     ,agreement[1],'immo id mismatch');
-          assert.equal(LESSEE_ACC  ,agreement[2],'lessee account mismatch');
-          assert.equal(FROM_DATE   ,agreement[3],'from date mismatch');
-          assert.equal(TO_DATE     ,agreement[4],'to date mismatch');
+          assert.equal(OWNER_ACC   ,agreement[2],'lessor account mismatch');
+          assert.equal(0           ,agreement[3],'lessee account mismatch');
+          assert.equal(FROM_DATE   ,agreement[4],'from date mismatch');
+          assert.equal(TO_DATE     ,agreement[5],'to date mismatch');
+          assert.equal('OFFERED'   ,AgreementState[agreement[6]], 'state mismatch');
           return agreement;
         });
   });
