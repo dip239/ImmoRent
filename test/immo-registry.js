@@ -5,7 +5,7 @@ contract('1. ImmoRegistry Create', function(accounts) {
   var resolveEvent;
   const OWNER_ACC  = accounts[0];
   const LESSEE_ACC = accounts[1];
-  const AgreementState = [ 'OFFERED', 'PENDING', 'ACTIVE', 'IN_CANCELATION', 'CANCELLED'];
+  const AgreementState = ['OFFERED', 'PENDING', 'ACTIVE', 'LESSOR_CANCEL', 'LESSEE_CANCEL', 'CLOSED', 'REJECTED'];
 
   before(function() {
     resolveEvent = web3UtilApi(web3, [ImmoRegistry]).resolveEvent;
@@ -13,28 +13,6 @@ contract('1. ImmoRegistry Create', function(accounts) {
 
   beforeEach(function() {
     immoRegistry = ImmoRegistry.deployed();
-  });
-
-  //doesn't work with event declaration like 'event NewImmo(Immo immo)' (no event received)
-  //but works with usual event declaration 'event NewImmo(address immo)'
-  xit('new Immo has valid notional (using events)', function(done){
-    var NOTIONAL = 333;
-    var filter = immoRegistry.NewImmo();
-
-    filter.watch(function(error, event) {
-      if (error) {
-        console.log("ERROR "+error);
-        return;
-      }
-      filter.stopWatching();
-      var immo = Immo.at(event.args.immo);
-      immo.notional().then(function(notional) {
-        assert.equal(NOTIONAL, notional);
-        done();
-      });
-    });
-
-    immoRegistry.createImmo(NOTIONAL,'descript123',[]);
   });
 
   it('new Immo is valid', function(){

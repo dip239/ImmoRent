@@ -35,33 +35,7 @@ contract ImmoRegistry {
        return rentalAgreements.length;
     }
 
-    modifier onlyFreeImmo(uint agreementId){
-        if (agreementId >= rentalAgreements.length) throw;
-        for(uint i=0;i<rentalAgreements.length;++i){
-            if (timeIntersects(i,agreementId)) throw;
-        }
-        _
-    }
-
-    modifier onlyAgreementState(uint id, AgreementState state) {
-        if (rentalAgreements[id].state!=state) throw;
-        _
-    }
-
-    modifier onlyOwner(uint immoId) {
-        if (immos[immoId].owner!=msg.sender) throw;
-        _
-    }
-
-    modifier onlyLessor(uint agreementId) {
-        if (rentalAgreements[agreementId].lessor!=msg.sender) throw;
-        _
-    }
-
-    modifier onlyLessee(uint agreementId) {
-        if (rentalAgreements[agreementId].lessee!=msg.sender) throw;
-        _
-    }
+//======== START factory methods
 
     function createImmo(uint priceMonthly, bytes description, bytes externalInfo) {
         var id = immos.length;
@@ -70,34 +44,6 @@ contract ImmoRegistry {
         );
         NewImmo(id);
     }
-
-    function rejectOtherAgreements(uint exceptAgreementNr) private {
-        var theImmoId = rentalAgreements[exceptAgreementNr].immoId;
-        for(uint i=0; i < rentalAgreements.length; ++i) {
-          if (i != exceptAgreementNr) {
-              if (timeIntersects(i, exceptAgreementNr)) {
-                var state = rentalAgreements[i].state;
-                rentalAgreements[i].state = AgreementState.REJECTED;
-                RentalAgreementStateChange(i,state,AgreementState.REJECTED);
-              }
-          }
-        }
-    }
-
-    function intersects(uint x1, uint y1, uint x2, uint y2) constant returns (bool){
-        return  (x1 >= y1 && x1 <= y2) ||
-                (x2 >= y1 && x2 <= y2) ||
-                (y1 >= x1 && y1 <= x2) ||
-                (y2 >= x1 && y2 <= x2);
-    }
-
-    function timeIntersects(uint agreementId1, uint agreementId2) constant returns (bool){
-        var a1 = rentalAgreements[agreementId1];
-        var a2 = rentalAgreements[agreementId2];
-        return a1.immoId == a2.immoId
-            && intersects(a1.fromDate, a1.toDate, a2.fromDate, a2.toDate);
-    }
-
 
     function createImmoOffer(uint immoId, uint fromDate, uint toDate)
         onlyOwner(immoId)
@@ -167,6 +113,68 @@ contract ImmoRegistry {
     {
         rentalAgreements[agreementNr].state = AgreementState.CLOSED;
     }
+
+//======== START modifiers
+    modifier onlyFreeImmo(uint agreementId){
+        if (agreementId >= rentalAgreements.length) throw;
+        for(uint i=0;i<rentalAgreements.length;++i){
+            if (timeIntersects(i,agreementId)) throw;
+        }
+        _
+    }
+
+    modifier onlyAgreementState(uint id, AgreementState state) {
+        if (rentalAgreements[id].state!=state) throw;
+        _
+    }
+
+    modifier onlyOwner(uint immoId) {
+        if (immos[immoId].owner!=msg.sender) throw;
+        _
+    }
+
+    modifier onlyLessor(uint agreementId) {
+        if (rentalAgreements[agreementId].lessor!=msg.sender) throw;
+        _
+    }
+
+    modifier onlyLessee(uint agreementId) {
+        if (rentalAgreements[agreementId].lessee!=msg.sender) throw;
+        _
+    }
+
+//======== END modifiers
+
+// === START helpers
+    function rejectOtherAgreements(uint exceptAgreementNr) private {
+        var theImmoId = rentalAgreements[exceptAgreementNr].immoId;
+        for(uint i=0; i < rentalAgreements.length; ++i) {
+          if (i != exceptAgreementNr) {
+              if (timeIntersects(i, exceptAgreementNr)) {
+                var state = rentalAgreements[i].state;
+                rentalAgreements[i].state = AgreementState.REJECTED;
+                RentalAgreementStateChange(i,state,AgreementState.REJECTED);
+              }
+          }
+        }
+    }
+
+    function intersects(uint x1, uint y1, uint x2, uint y2) constant returns (bool){
+        return  (x1 >= y1 && x1 <= y2) ||
+                (x2 >= y1 && x2 <= y2) ||
+                (y1 >= x1 && y1 <= x2) ||
+                (y2 >= x1 && y2 <= x2);
+    }
+
+    function timeIntersects(uint agreementId1, uint agreementId2) constant returns (bool){
+        var a1 = rentalAgreements[agreementId1];
+        var a2 = rentalAgreements[agreementId2];
+        return a1.immoId == a2.immoId
+            && intersects(a1.fromDate, a1.toDate, a2.fromDate, a2.toDate);
+    }
+
+// === END helpers
+
 
     event NewImmo(uint immoId);
     event NewRentalAgreement(uint rentalAgreementId);

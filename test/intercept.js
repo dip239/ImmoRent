@@ -13,7 +13,7 @@ var web3UtilApi = require('../lib/web3-util');
     beforeEach(function () {
       immoRegistry = ImmoRegistry.deployed();
     });
-    
+
     const TEST_DATA = [
       {  args : [3,6,7,9], result: false},
       {  args : [3,6,6,9], result: true },
