@@ -64,7 +64,7 @@ contract ImmoRegistry {
                 if (state == AgreementState.OFFERED || state == AgreementState.PENDING
                    || state == AgreementState.LESSOR_CANCEL || state == AgreementState.LESSEE_CANCEL) {
                     rentalAgreements[i].state = AgreementState.REJECTED;
-                    RentalAgreementStateChange(i,state,AgreementState.REJECTED);
+                    RentalAgreementStateChange(i,uint8(state),uint8(AgreementState.REJECTED));
                 }
             }
         }
@@ -75,6 +75,7 @@ contract ImmoRegistry {
     {
         rentalAgreements[agreementNr].lessee = msg.sender;
         rentalAgreements[agreementNr].state = AgreementState.PENDING;
+        RentalAgreementStateChange(agreementNr,uint8(AgreementState.OFFERED),uint8(AgreementState.PENDING));
     }
 
     function startRentalAgreement(uint agreementNr)
@@ -83,6 +84,7 @@ contract ImmoRegistry {
         onlyFreeImmo(agreementNr)
     {
         rentalAgreements[agreementNr].state = AgreementState.ACTIVE;
+        RentalAgreementStateChange(agreementNr,uint8(AgreementState.PENDING),uint8(AgreementState.ACTIVE));
         rejectOtherAgreements(agreementNr);
     }
 
@@ -91,6 +93,7 @@ contract ImmoRegistry {
         onlyLessor(agreementNr)
     {
         rentalAgreements[agreementNr].state = AgreementState.LESSOR_CANCEL;
+        RentalAgreementStateChange(agreementNr,uint8(AgreementState.ACTIVE),uint8(AgreementState.LESSOR_CANCEL));
     }
 
     function askCancelationByLessee(uint agreementNr)
@@ -98,6 +101,7 @@ contract ImmoRegistry {
         onlyLessee(agreementNr)
     {
         rentalAgreements[agreementNr].state = AgreementState.LESSEE_CANCEL;
+        RentalAgreementStateChange(agreementNr,uint8(AgreementState.ACTIVE),uint8(AgreementState.LESSEE_CANCEL));
     }
 
     function confirmCancelationByLessor(uint agreementNr)
@@ -105,6 +109,7 @@ contract ImmoRegistry {
         onlyLessor(agreementNr)
     {
         rentalAgreements[agreementNr].state = AgreementState.CLOSED;
+        RentalAgreementStateChange(agreementNr,uint8(AgreementState.LESSEE_CANCEL),uint8(AgreementState.CLOSED));
     }
 
     function confirmCancelationByLessee(uint agreementNr)
@@ -112,6 +117,7 @@ contract ImmoRegistry {
         onlyLessee(agreementNr)
     {
         rentalAgreements[agreementNr].state = AgreementState.CLOSED;
+        RentalAgreementStateChange(agreementNr,uint8(AgreementState.LESSOR_CANCEL),uint8(AgreementState.CLOSED));
     }
 
 //======== START modifiers
@@ -153,7 +159,7 @@ contract ImmoRegistry {
               if (timeIntersects(i, exceptAgreementNr)) {
                 var state = rentalAgreements[i].state;
                 rentalAgreements[i].state = AgreementState.REJECTED;
-                RentalAgreementStateChange(i,state,AgreementState.REJECTED);
+                RentalAgreementStateChange(i,uint8(state),uint8(AgreementState.REJECTED));
               }
           }
         }
@@ -178,5 +184,5 @@ contract ImmoRegistry {
 
     event NewImmo(uint immoId);
     event NewRentalAgreement(uint rentalAgreementId);
-    event RentalAgreementStateChange(uint rentalAgreementId, AgreementState from, AgreementState to);
+    event RentalAgreementStateChange(uint256 rentalAgreementId, uint8 from, uint8 to);
 }
