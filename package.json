@@ -1,0 +1,43 @@
+{
+  "name": "ImoRent",
+  "version": "0.0.1",
+  "description": "TODO: package.json",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "lint": "jshint test/ && jshint lib/",
+    "run": "node exporter.js",
+    "pretest": "truffle migrate",
+    "test": "truffle test",
+    "post_test": "npm run lint",
+    "preversion": "npm run lint",
+    "postversion": "git push && git push --tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dip239/web3-rest-explorer.git"
+  },
+  "author": "Dmitry palchun",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dip239/web3-rest-explorer/issues"
+  },
+  "homepage": "https://github.com/dip239/web3-rest-explorer#readme",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "jshint": "^2.9.2",
+    "json-server": "^0.8.17",
+    "mockserver": "^1.5.1"
+  },
+  "dependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.1.1",
+    "pem": "^1.8.3",
+    "restify": "^4.1.1",
+    "restify-cors-middleware": "0.0.7",
+    "restify-errors": "^4.2.3",
+    "web3": "^0.17.0-beta"
+  }
+}
