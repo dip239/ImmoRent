@@ -35,32 +35,11 @@ contract ImmoRegistry {
        return rentalAgreements.length;
     }
 
-    function createImmo(uint priceMonthly, bytes description, bytes externalInfo) {
-        var id = immos.length;
-        immos.push(
-            Immo(id, msg.sender, priceMonthly, description, externalInfo)
-        );
-        NewImmo(id);
-    }
-
-    function rejectOtherAgreements(uint agreementNr) private {
-      //ToDo:
-    }
-
-    function intersects(uint start1, uint end1, uint start2, uint end2) private returns (bool){
-        //ToDo:
-        return (start1>=start2 && end1<=start2) || (start1>=start2 && end1<=start2);
-    }
-
     modifier onlyFreeImmo(uint agreementId){
-  /*    //(uint immoId, uint fromDate, uint toDate)
-        if (immoId >= immos.length) throw;
+        if (agreementId >= rentalAgreements.length) throw;
         for(uint i=0;i<rentalAgreements.length;++i){
-            if (immoId == rentalAgreements[i].immoId) {
-                if (intersects(fromDate, toDate, rentalAgreements[i].fromDate, rentalAgreements[i].fromDate)) throw;
-            }
+            if (timeIntersects(i,agreementId)) throw;
         }
-   */
         _
     }
 
@@ -84,6 +63,52 @@ contract ImmoRegistry {
         _
     }
 
+    function createImmo(uint priceMonthly, bytes description, bytes externalInfo) {
+        var id = immos.length;
+        immos.push(
+            Immo(id, msg.sender, priceMonthly, description, externalInfo)
+        );
+        NewImmo(id);
+    }
+
+    function rejectOtherAgreements(uint exceptAgreementNr) private {
+        var theImmoId = rentalAgreements[exceptAgreementNr].immoId;
+        for(uint i=0; i < rentalAgreements.length; ++i) {
+          if (i != exceptAgreementNr) {
+              if (timeIntersects(i, exceptAgreementNr)) {
+                var state = rentalAgreements[i].state;
+                rentalAgreements[i].state = AgreementState.REJECTED;
+                RentalAgreementStateChange(i,state,AgreementState.REJECTED);
+              }
+          }
+        }
+    }
+
+    function intersects(uint x1, uint y1, uint x2, uint y2) constant returns (bool){
+        return  (x1 >= y1 && x1 <= y2) ||
+                (x2 >= y1 && x2 <= y2) ||
+                (y1 >= x1 && y1 <= x2) ||
+                (y2 >= x1 && y2 <= x2);
+    }
+
+    function timeIntersects(uint agreementId1, uint agreementId2) constant returns (bool){
+        var a1 = rentalAgreements[agreementId1];
+        var a2 = rentalAgreements[agreementId2];
+        return a1.immoId == a2.immoId
+            && intersects(a1.fromDate, a1.toDate, a2.fromDate, a2.toDate);
+    }
+
+
+    function createImmoOffer(uint immoId, uint fromDate, uint toDate)
+        onlyOwner(immoId)
+    {
+        var id = rentalAgreements.length;
+        rentalAgreements.push(
+            RentalAgreement(id, immoId, msg.sender, address(0x0), fromDate, toDate, AgreementState.OFFERED)
+        );
+        NewRentalAgreement(id);
+    }
+
     function cancelImmoOffer(uint immoId)
         onlyOwner(immoId)
     {
@@ -97,16 +122,6 @@ contract ImmoRegistry {
                 }
             }
         }
-    }
-
-    function createImmoOffer(uint immoId, uint fromDate, uint toDate)
-        onlyOwner(immoId)
-    {
-        var id = rentalAgreements.length;
-        rentalAgreements.push(
-            RentalAgreement(id, immoId, msg.sender, address(0x0), fromDate, toDate, AgreementState.OFFERED)
-        );
-        NewRentalAgreement(id);
     }
 
     function acceptRentalAgreement(uint agreementNr)
