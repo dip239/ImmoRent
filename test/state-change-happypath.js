@@ -3,8 +3,9 @@ var web3UtilApi = require('../lib/web3-util');
 contract('2. State Change (HappyPath)', function(accounts) {
   var immoRegistry;
   var resolveEvent;
-  const OWNER_ACC  = accounts[0];
-  const LESSEE_ACC = accounts[1];
+  const OWNER_ACC   = accounts[0];
+  const LESSOR_ACC  = accounts[0];
+  const LESSEE_ACC  = accounts[1];
   const AgreementState = ['OFFERED', 'PENDING', 'ACTIVE', 'LESSOR_CANCEL', 'LESSEE_CANCEL', 'CLOSED', 'REJECTED'];
 
   before(function() {
@@ -58,11 +59,8 @@ contract('2. State Change (HappyPath)', function(accounts) {
         });
   });
 
-  it('lesser accepts the offer', function(){
-    const IMMO_ID = 0;
-    const DISPLAY_NAME = 'immohouse112';
-    const FROM_DATE = 10;
-    const TO_DATE = 20;
+  it('lessee accepts the offer', function(){
+    var IMMO_ID = 0;
     return immoRegistry.acceptRentalAgreement(theAgreementNr, {from:LESSEE_ACC})
         .then(resolveEvent('RentalAgreementStateChange(uint256,uint8,uint8)'))
         .then(function(eventInfo) {
@@ -73,12 +71,26 @@ contract('2. State Change (HappyPath)', function(accounts) {
         }).then(function(agreement) {
           var agreementNr = agreement[0].valueOf();
           assert.equal(theAgreementNr,agreementNr,'agreement.id mismatch');
-          assert.equal(IMMO_ID       ,agreement[1],'immo id mismatch');
           assert.equal(OWNER_ACC     ,agreement[2],'lessor account mismatch');
           assert.equal(LESSEE_ACC    ,agreement[3],'lessee account mismatch');
-          assert.equal(FROM_DATE     ,agreement[4],'from date mismatch');
-          assert.equal(TO_DATE       ,agreement[5],'to date mismatch');
           return agreementNr;
         });
    });
+
+  it('lessee accepts the offer', function(){
+    return immoRegistry.startRentalAgreement(theAgreementNr, {from:LESSOR_ACC})
+        .then(resolveEvent('RentalAgreementStateChange(uint256,uint8,uint8)'))
+        .then(function(eventInfo) {
+          assert.equal(theAgreementNr,eventInfo[0],'agreement.id mismatch');
+          assert.equal('PENDING'     ,AgreementState[eventInfo[1]],'immo id mismatch');
+          assert.equal('ACTIVE'     ,AgreementState[eventInfo[2]],'lessor account mismatch');
+          return immoRegistry.rentalAgreements(eventInfo[0]);
+        }).then(function(agreement) {
+          var agreementNr = agreement[0].valueOf();
+          assert.equal(theAgreementNr,agreementNr,'agreement.id mismatch');
+          assert.equal(OWNER_ACC     ,agreement[2],'lessor account mismatch');
+          assert.equal(LESSEE_ACC    ,agreement[3],'lessee account mismatch');
+          return agreementNr;
+        });
+  });
 });
